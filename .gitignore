@@ -1,0 +1,102 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Virtual environment
+venv/
+ENV/
+env/
+.venv/
+env.bak/
+venv.bak/
+
+# Packages
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+bin/
+var/
+sdist/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Environments
+.env
+.env.*
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# PyCharm specific files
+.idea/
+
+# VS Code specific files
+.vscode/
+*.code-workspace
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# Pycharm specific
+.idea/
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+pytest_cache/
+cover/
+
+# Translations
+*.mo
+*.pot
+
+# Logs and database files
+*.log
+*.sqlite3
+*.db
+
+# Temporary files and folders
+tmp/
+temp/
+*.tmp
+*.swp
+*~
+
+# System-specific files
+.DS_Store
+Thumbs.db
+
+# FastAPI admin files
+fastapi_admin/
+
+# Local Postgres data (optional, if you store database locally)
+pgdata/
+
+postgres_commands
