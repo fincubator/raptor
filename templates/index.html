@@ -195,35 +195,31 @@ const accountData = await fetch("https://rest.cosmos.directory/celestia" + "/cos
 
 console.log("accountData",accountData)
       const msg = {
-      "type": "cosmos-sdk/MsgGrant",
-      "value": {
-        "granter": accounts[0].address,
-        "grantee": validator,
-        "grant": {
-          "authorization": {
-            "type": "cosmos-sdk/StakeAuthorization",
-            "value": {
-              "Validators": {
-                "type": "cosmos-sdk/StakeAuthorization/AllowList",
-                "value": {
-                  "allow_list": {
-                    "address": [
-                      "celestiavaloper1snun9qqk9eussvyhkqm03lz6f265ekhnnlw043"
-                    ]
+                type: "cosmos-sdk/MsgGrant",
+                value: {
+                  grant: {
+                    authorization: {
+                      type: "cosmos-sdk/StakeAuthorization",
+                      value: {
+                        Validators: {
+                          type: "cosmos-sdk/StakeAuthorization/AllowList",
+                          value: {
+                            allow_list: {
+                              address: [
+                                "celestiavaloper1snun9qqk9eussvyhkqm03lz6f265ekhnnlw043",
+                              ],
+                            },
+                          },
+                        },
+                        authorization_type: 3,
+                      },
+                    },
+                    expiration: "2025-08-29T21:00:00Z",
                   },
-                  maxTokens: {
-                  denom: 'utia',
-                  amount: '100000000'
+                  grantee: validator,
+                  granter:  accounts[0].address,
                 },
-                  "authorization_type": 999999
-                }
-              },
               }
-          },
-          "expiration": new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) // 365 days from now
-          }
-        }
-      };
 
       const fee = {
         amount: [{ denom: "uatom", amount: "5000" }],
@@ -240,10 +236,19 @@ console.log("accountData",accountData)
 };
 
 const signResponse = await window.keplr.signAmino(chainId, accounts[0].address, signDoc);
+console.log(signResponse)
+const encoder = new TextEncoder();
+const encodedTx = encoder.encode(signResponse);
+const result = await window.keplr.sendTx(
+              chainId,
+              {},
+              "sync"
+            );
+console.log(result)
 
-const result = await window.keplr.sendTx(chainId, accounts[0].address, signResponse)      
-      console.log("Transaction result:", result);
-      alert(`Redelegate authz transaction sent for ${chain}! Transaction hash: ${result.transactionHash}`);
+// const result = await window.keplr.sendTx(chainId, accounts[0].address, signResponse)      
+//       console.log("Transaction result:", result);
+//       alert(`Redelegate authz transaction sent for ${chain}! Transaction hash: ${result.transactionHash}`);
     } catch (error) {
       console.error("Failed to send redelegate authz transaction:", error);
       alert("Failed to send redelegate authz transaction. Please try again.");
