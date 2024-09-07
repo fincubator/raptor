@@ -2,12 +2,13 @@ import os
 import json
 from aiogram import Bot
 from tortoise import Tortoise, run_async
-from models import Influencer
+from models.models import Influencer
 from dotenv import load_dotenv
 
 load_dotenv()
 
 bot = Bot(token=os.getenv('TG_BOT_TOKEN'))
+
 
 async def init():
     await Tortoise.init(
@@ -15,6 +16,7 @@ async def init():
         modules={'models': ['models']}
     )
     await Tortoise.generate_schemas()
+
 
 async def fetch_usernames():
     await init()

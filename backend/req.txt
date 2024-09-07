@@ -20,7 +20,6 @@ httpcore==1.0.5
 httpx==0.27.0
 idna==3.7
 iso8601==1.1.0
-Jinja2==3.1.4
 magic-filter==1.0.12
 MarkupSafe==2.1.5
 multidict==6.0.5

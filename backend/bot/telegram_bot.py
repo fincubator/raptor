@@ -1,16 +1,16 @@
 import logging
-import base64
 import os
-from aiogram import Bot, Dispatcher, types
+from aiogram import Bot, Dispatcher
 from aiogram.filters import Command, CommandStart
-from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import Message
 from aiogram.fsm.storage.memory import MemoryStorage
-from tortoise.exceptions import DoesNotExist
-from models import Developer, Influencer, User
+from models.models import Developer, Influencer, User
+from services.encode_decode_id import encode_id
 from aiogram.dispatcher.router import Router
 from dotenv import load_dotenv
 
 load_dotenv()
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -18,14 +18,10 @@ bot = Bot(token=os.getenv('TG_BOT_TOKEN'))
 storage = MemoryStorage()
 dp = Dispatcher(storage=storage)
 router = Router()
+
 allowed_user_id = os.getenv('ALLOWED_USER_ID')
 tg_bot_link = os.getenv('TG_BOT_LINK')
 website_link = os.getenv('WEBSITE_LINK')
-
-
-def encode_user_id(user_id: int) -> str:
-    """Encode the Telegram user ID into a non-human-readable format."""
-    return base64.urlsafe_b64encode(str(user_id).encode()).decode()
 
 
 @router.message(CommandStart())
@@ -37,7 +33,6 @@ async def cmd_start(message: Message):
     if len(args) > 1:
         referral_arg = args[1]
     else:
-        referral_arg = None
         await message.answer("Access denied. No referral link provided.")
         return
 
@@ -53,47 +48,14 @@ async def cmd_start(message: Message):
         else:
             influencer = await Influencer.get_or_none(telegram_id=referral_arg)
             if influencer:
-                keyboard = InlineKeyboardMarkup(inline_keyboard=[
-                    [
-                        InlineKeyboardButton(
-                            text="tia", callback_data=f"tia:{referral_arg}:{user_id}"),
-                        InlineKeyboardButton(
-                            text="fet", callback_data=f"fet:{referral_arg}:{user_id}"),
-                        InlineKeyboardButton(
-                            text="both", callback_data=f"both:{referral_arg}:{user_id}"),
-                    ]
-                ])
-                await message.answer("Please choose the link you want to receive:", reply_markup=keyboard)
+                user_link = f"{website_link}?referral_code={encode_id(referral_arg)}&id={encode_id(user_id)}"
+                await User.get_or_create(telegram_id=user_id, defaults={"referral_inf_code": referral_arg, "telegram_id": user_id})
+                await message.answer(f"Here is your link: {user_link}")
             else:
                 await message.answer("Access denied. Invalid referral link.")
     except Exception as e:
-        logger.error(e)
+        logger.error(f"Error processing referral: {e}")
         await message.answer("Access denied. Invalid referral link.")
-
-
-@router.callback_query()
-async def handle_link_choice(callback_query: types.CallbackQuery):
-    try:
-        choice, referral_arg, user_id = callback_query.data.split(":")
-
-        if choice == "tia":
-            user_link = f"{website_link}/tia?referral_code={encode_user_id(referral_arg)}&id={encode_user_id(user_id)}"
-        elif choice == "fet":
-            user_link = f"{website_link}/fet?referral_code={encode_user_id(referral_arg)}&id={encode_user_id(user_id)}"
-        elif choice == "both":
-            user_link = f"{website_link}/both?referral_code={encode_user_id(referral_arg)}&id={encode_user_id(user_id)}"
-        else:
-            await callback_query.message.answer("Invalid choice. Please try again.")
-            return
-
-        await User.get_or_create(telegram_id=user_id, defaults={"referral_inf_code": referral_arg, "telegram_id": user_id})
-
-        await callback_query.message.answer(f"Here is your link: {user_link}")
-
-        await callback_query.answer()
-    except Exception as e:
-        logger.error(e)
-        await callback_query.message.answer(f"Something went wrong. Please try again or connect to developers.")
 
 
 @router.message(Command("add_referral"))
@@ -174,10 +136,12 @@ async def show_user_codes_command(message: Message):
     try:
         existing_codes = await User.all()
         if existing_codes:
-            codes_dict = {}
-            for user in existing_codes:
-                codes_dict.update({user.telegram_id: user.referral_inf_code})
-            await message.answer(f"Existing user referral codes:\n{codes_dict}")
+            codes_dict = {
+                user.telegram_id: user.referral_inf_code for user in existing_codes}
+            # Format dictionary for display
+            codes_message = "\n".join(
+                [f"{key}: {value}" for key, value in codes_dict.items()])
+            await message.answer(f"Existing user referral codes:\n{codes_message}")
         else:
             await message.answer("No existing user referral codes.")
     except Exception as e:
