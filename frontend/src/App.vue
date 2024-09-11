@@ -38,7 +38,7 @@ export default {
     return {
       validators: [
         {
-          logo: 'https://example.com/posthuman-logo.png',
+          logo: 'https://avatars.githubusercontent.com/u/108546933?s=200&v=4',
           name: 'POSTHUMAN',
           chain: 'Celestia Network (TIA)',
           stats: {
@@ -55,7 +55,7 @@ export default {
           backendUrl: 'http://127.0.0.1:8000/api_tia',
         },
         {
-          logo: 'https://example.com/finteh-logo.png',
+          logo: 'https://avatars.githubusercontent.com/u/19353587?s=200&v=4',
           name: 'Finteh',
           chain: 'Fetch.ai Network (FET)',
           stats: {
@@ -101,7 +101,7 @@ export default {
     async connectKeplr(network, rpcUrl, gasPrice) {
       if (this.currentNetwork === network && this.signingClient && this.account) {
         alert(`Already connected to ${network} network with address: ${this.account.address}`);
-        return;
+        return true;
       }
       try {
         const { client, account } = await connectSigningClient(network, rpcUrl, gasPrice);
@@ -109,16 +109,24 @@ export default {
         this.account = account;
         this.currentNetwork = network;
         alert(`Connected with address: ${this.account.address} on ${network} network`);
+        return true;
+
       } catch (error) {
         console.error('Failed to connect Keplr:', error);
-        alert('Failed to connect Keplr. Please кefresh the page page try again.');
+        alert('Failed to connect Keplr. Please refresh the page page try again.');
+        return false;
       }
     },
     async handleRedelegate(validator) {
+      const isConnected = await this.connectKeplr(validator.network, validator.rpcUrl, validator.gasPrice);
+      if (!isConnected) {
+        return;
+      }
+
       try {
-        await this.connectKeplr(validator.network, validator.rpcUrl, validator.gasPrice);
         console.log("this.accont", this.account)
         this.isLoading = true;
+
         const result = await signAndBroadcast(
           this.signingClient,
           this.account,
@@ -129,18 +137,23 @@ export default {
 
         if (result.code === 0) {
           const transactionHash = result.transactionHash;
+          
           await this.sendTransactionDataToBackend(
             validator.backendUrl,
             this.account.address,
             transactionHash
           );
+
+          this.isLoading = false;
+
           alert(`Transaction successful! Hash: ${result.transactionHash}`);
         } else {
           throw new Error(result.rawLog);
         }
       } catch (error) {
         console.error('Failed to send redelegate transaction:', error);
-        alert('Failed to send redelegate transaction. Please кefresh the page page try again.');
+        alert('Failed to send redelegate transaction. Please refresh the page page try again.');
+        this.isLoading = false;
       } finally {
         this.isLoading = false;
       }
