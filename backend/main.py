@@ -6,10 +6,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from services.encode_decode_id import decode_id
 from services.save_user_delegation import save_user_delegation_tia, save_user_delegation_fet
+from services.validate_user_link import validate_user_link
 from bot.telegram_bot import start_telegram_bot
 from tortoise.contrib.fastapi import register_tortoise
 from dotenv import load_dotenv
-from schemas import Data
+from schemas import TxData, LinkData
 
 
 logging.basicConfig(level=logging.INFO)
@@ -44,13 +45,42 @@ app.add_middleware(
 )
 
 
-@app.post("/api_tia")
-async def handle_broadcast_request_tia(data: Data):
+@app.post("/api/check_link")
+async def check_link(data: LinkData):
+    logger.info(f"Check link request: {data}")
+    try:
+        user_id = data.user_id
+        ref_id = data.ref_id
+        link_id = data.link_id
+        
+        if not user_id or not ref_id or not link_id:
+            raise HTTPException(
+                status_code=400, detail="Invalid data: user_id, ref_id, and link_id are required."
+            )
+        try:
+            decoded_user_id = decode_id(user_id)
+            decoded_ref_id = decode_id(ref_id)
+        except Exception as e:
+            logger.error(f"Error decoding IDs: {e}")
+            raise HTTPException(status_code=400, detail="Invalid ID format.")
+        result = await validate_user_link(decoded_user_id, decoded_ref_id, link_id)
+        logger.info(result)
+        return result     
+    except HTTPException as e:
+        logger.error(f"HTTPException in /api/check_link: {e.detail}")
+        raise e
+    except Exception as e:
+        logger.error(f"Unexpected error in /api/check_link: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error.")
+
+
+@app.post("/api/tia")
+async def handle_broadcast_request_tia(data: TxData):
     logger.info(f"request:{data}")
     try:
-        telegram_id, referral_inf_code, address, tx = get_data(data)
+        telegram_id, address, tx, tx_error = get_data(data)
         result = await save_user_delegation_tia(
-            telegram_id, referral_inf_code, address, tx)
+            telegram_id, address, tx, tx_error)
         logger.info(result)
         return result
     except HTTPException as e:
@@ -58,16 +88,17 @@ async def handle_broadcast_request_tia(data: Data):
         raise e
     except Exception as e:
         logger.error(f"Unexpected error processing TIA request: {e}")
-        raise HTTPException(status_code=500, detail=f"Error processing request: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error processing request: {str(e)}")
 
 
-@app.post("/api_fet")
-async def handle_broadcast_request_fet(data: Data):
+@app.post("/api/fet")
+async def handle_broadcast_request_fet(data: TxData):
     logger.info(f"request:{data}")
     try:
-        telegram_id, referral_inf_code, address, tx = get_data(data)
+        telegram_id, address, tx, tx_error = get_data(data)
         result = await save_user_delegation_fet(
-            telegram_id, referral_inf_code, address, tx)
+            telegram_id, address, tx, tx_error)
         logger.info(result)
         return result
     except HTTPException as e:
@@ -82,19 +113,18 @@ async def handle_broadcast_request_fet(data: Data):
 
 def get_data(data):
     telegram_id = data.telegram_id
-    referral_inf_code = data.referral_inf_code
     address = data.address
     tx = data.tx
-    
-    if not telegram_id or not referral_inf_code:
+    tx_error = data.tx_error
+
+    if not telegram_id:
         raise HTTPException(
-            status_code=400, detail="Invalid data: telegram_id and referral_inf_code cannot be empty.")
-    
+            status_code=400, detail="Invalid data: telegram_id and ref_id cannot be empty.")
+
     try:
         telegram_id = decode_id(telegram_id)
-        referral_inf_code = decode_id(referral_inf_code)
     except Exception as e:
         logger.error(f"Error decoding IDs: {e}")
         raise HTTPException(status_code=400, detail="Invalid ID format.")
-    
-    return [telegram_id, referral_inf_code, address, tx]
+
+    return [telegram_id, address, tx, tx_error]

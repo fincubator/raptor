@@ -1,13 +1,13 @@
 from pydantic import BaseModel, validator, Field
 
-class Data(BaseModel):
-    telegram_id: str = Field(..., description="Encoded telegram ID")
-    referral_inf_code: str = Field(..., description="Encoded referral information code")
-    address: str = Field(..., description="Blockchain address")
-    tx: str = Field(..., description="Transaction hash")
+class TxData(BaseModel):
+    telegram_id: str
+    address: str
+    tx: str
+    tx_error: str
+    
 
-    @validator('*', pre=True)
-    def check_not_empty(cls, value):
-        if not value or value.strip() == "":
-            raise ValueError("Value cannot be empty")
-        return value
+class LinkData(BaseModel):
+    user_id: str
+    ref_id: str
+    link_id: str

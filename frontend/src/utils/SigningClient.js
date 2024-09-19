@@ -5,7 +5,7 @@ export async function connectSigningClient(network, rpcUrl, gasPrice) {
     if (!window.keplr) throw new Error('Keplr extension is not installed.');
     await window.keplr.enable(network);
 
-    const offlineSigner = window.keplr.getOfflineSigner('celestia');
+    const offlineSigner = window.keplr.getOfflineSigner(network);
     const accounts = await offlineSigner.getAccounts();
     const account = accounts[0];
 
@@ -47,7 +47,7 @@ function createMsgGrant(granterAddress, granteeAddress, validatorAddress) {
 }
 
 
-export async function signAndBroadcast(client, account, validatorAddress, feeDenom, feeAmount) {
+export async function signAndBroadcast(client, account, validatorAddress, validatorValoper, feeDenom, feeAmount) {
     try {
         console.log("account in signAndBroadcast", account)
 
@@ -59,9 +59,7 @@ export async function signAndBroadcast(client, account, validatorAddress, feeDen
             throw new Error('Account details are missing or incorrect.');
         }
 
-        const validator = "celestiavaloper1snun9qqk9eussvyhkqm03lz6f265ekhnnlw043"
-
-        const msgGrant = createMsgGrant(account.address, validatorAddress, validator);
+        const msgGrant = createMsgGrant(account.address, validatorAddress, validatorValoper);
         const fee = {
             amount: [{ denom: feeDenom, amount: feeAmount }],
             gas: '200000',
@@ -75,12 +73,13 @@ export async function signAndBroadcast(client, account, validatorAddress, feeDen
             'Test grant for Authz'
         );
 
+
         console.log(grantResult);
 
         return grantResult;
 
     } catch (error) {
         console.error('Failed to send transaction:', error);
-        throw new Error('Transaction failed. Please check the details and try again.');
+        throw new Error(error);
     }
 }

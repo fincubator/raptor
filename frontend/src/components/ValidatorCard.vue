@@ -4,7 +4,6 @@
       <div class="validator-name">{{ validator.name }}</div>
       <div class="validator-chain">{{ validator.chain }}</div>
       <div class="validator-stats">
-        Voting Power: {{ validator.stats.votingPower }}<br />
         Commission: {{ validator.stats.commission }}<br />
         Uptime: {{ validator.stats.uptime }}
       </div>
@@ -19,14 +18,9 @@
     props: {
       validator: Object,
     },
-    data() {
-      return {
-        maxTokens: '',
-      };
-    },
     methods: {
       submitRedelegate() {
-        this.$emit('redelegate', this.validator, this.maxTokens);
+        this.$emit('redelegate', this.validator);
       },
     },
   };

@@ -6,19 +6,30 @@
     </header>
 
     <div class="container">
-      <div v-if="!hasReferralCode" class="error-message">
-        <p>Access to the site is restricted without a referral code. Please contact the developers to obtain one.</p>
+      <div v-if="isValidatingLink" class="loading-overlay">
+        <div class="spinner"></div>
+        <p>Validating link, please wait...</p>
       </div>
 
       <div v-else>
-        <div v-if="isLoading" class="loading-overlay">
-          <div class="spinner"></div>
-          <p>Sending transaction, please wait...</p>
+        <div v-if="!isLinkValid" class="error-message">
+          <p>{{ errorMessage }}</p>
         </div>
 
-        <div class="validator-list">
-          <ValidatorCard v-for="(validator, index) in validators" :key="index" :validator="validator"
-            @redelegate="handleRedelegate" />
+        <div v-else>
+          <div v-if="isLoading" class="loading-overlay">
+            <div class="spinner"></div>
+            <p>Sending transaction, please wait...</p>
+          </div>
+
+          <div class="validator-list">
+            <ValidatorCard
+              v-for="(validator, index) in validators"
+              :key="index"
+              :validator="validator"
+              @redelegate="handleRedelegate"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -42,60 +53,94 @@ export default {
           name: 'POSTHUMAN',
           chain: 'Celestia Network (TIA)',
           stats: {
-            votingPower: '2,345,678',
             commission: '5%',
-            uptime: '99.99%',
           },
           address: 'celestia1zwjfxr3j9gnnrhxwtt8t6qqr4pdn7cgj33hd7c',
+          validatorValoper: 'celestiavaloper1snun9qqk9eussvyhkqm03lz6f265ekhnnlw043',
           network: 'celestia',
-          rpcUrl: 'https://rpc.cosmos.directory/celestia',
+          rpcUrl: 'https://celestia-rpc.stake-town.com',
           gasPrice: '0.025utia',
           feeDenom: 'utia',
           feeAmount: '10000',
-          backendUrl: 'http://127.0.0.1:8000/api_tia',
+          backendUrl: 'http://127.0.0.1:8000/api/tia',
         },
         {
           logo: 'https://avatars.githubusercontent.com/u/19353587?s=200&v=4',
           name: 'Finteh',
           chain: 'Fetch.ai Network (FET)',
           stats: {
-            votingPower: '1,876,543',
             commission: '7%',
-            uptime: '99.98%',
           },
-          address: 'fetch....',
+          address: 'fetch1ujc2kt26d3a0x7v92e5acfu952j228f2cvkyay',
+          validatorValoper: 'fetchvaloper1ujc2kt26d3a0x7v92e5acfu952j228f2agf8wr',
           network: 'fetchhub-4',
-          rpcUrl: 'https://rpc.cosmos.directory/fetchhub',
+          rpcUrl: 'https://fetch-rpc.cosmosrescue.com',
           gasPrice: '0.025afet',
           feeDenom: 'afet',
           feeAmount: '10000',
-          backendUrl: 'http://127.0.0.1:8000/api_fet',
+          backendUrl: 'http://127.0.0.1:8000/api/fet',
         },
       ],
       signingClient: null,
       account: null,
       currentNetwork: null,
       isLoading: false,
-      encodedTelegramId: '',
-      encodedReferralCode: '',
-      hasReferralCode: true,
-
+      encodedUserId: '',
+      encodedReferrerId: '',
+      linkId: '',
+      isLinkValid: false,
+      isValidatingLink: true,
+      errorMessage: '',
     };
   },
-  mounted() {
-    this.extractParamsFromUrl();
+  async mounted() {
+    await this.extractParamsFromUrl();
+    this.isValidatingLink = false;
   },
   methods: {
-    extractParamsFromUrl() {
+    async extractParamsFromUrl() {
       const params = new URLSearchParams(window.location.search);
-      this.encodedReferralCode = params.get('referral_code') || '';
-      this.encodedTelegramId = params.get('id') || '';
+      this.encodedReferrerId = params.get('ref_id') || '';
+      this.encodedUserId = params.get('user_id') || '';
+      this.linkId = params.get('link_id') || '';
 
-      if (!this.encodedReferralCode || !this.encodedTelegramId) {
-        this.hasReferralCode = false;
-        console.error('Missing referral_code or id parameters in URL.');
-        alert('Missing referral_code or id.');
+      if (!this.encodedReferrerId || !this.encodedUserId || !this.linkId) {
+        this.errorMessage = 'Access denied. Invalid or missing referral link parameters.';
+        console.error('Missing parameters in URL.');
+        return;
+      }
+      await this.validateLink();
+    },
+    async validateLink() {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/api/check_link', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            user_id: this.encodedUserId,
+            ref_id: this.encodedReferrerId,
+            link_id: this.linkId,
+          }),
+        });
 
+        if (response.ok) {
+          const data = await response.json();
+          if (data.valid) {
+            this.isLinkValid = true;
+          } else {
+            this.errorMessage = data.message || 'Access denied. The link has already been used.';
+            console.error('Link validation failed:', data.message);
+          }
+        } else {
+          const errorData = await response.json();
+          this.errorMessage = errorData.detail || 'Access denied. Invalid link.';
+          console.error('Link validation failed:', errorData.detail);
+        }
+      } catch (error) {
+        this.errorMessage = 'An error occurred while validating the link.';
+        console.error('Error validating link:', error);
       }
     },
     async connectKeplr(network, rpcUrl, gasPrice) {
@@ -110,10 +155,9 @@ export default {
         this.currentNetwork = network;
         alert(`Connected with address: ${this.account.address} on ${network} network`);
         return true;
-
       } catch (error) {
         console.error('Failed to connect Keplr:', error);
-        alert('Failed to connect Keplr. Please refresh the page page try again.');
+        alert('Failed to connect Keplr. Please refresh the page and try again.');
         return false;
       }
     },
@@ -124,41 +168,46 @@ export default {
       }
 
       try {
-        console.log("this.accont", this.account)
         this.isLoading = true;
 
         const result = await signAndBroadcast(
           this.signingClient,
           this.account,
           validator.address,
+          validator.validatorValoper,
           validator.feeDenom,
           validator.feeAmount
         );
 
         if (result.code === 0) {
           const transactionHash = result.transactionHash;
-          
+
           await this.sendTransactionDataToBackend(
             validator.backendUrl,
             this.account.address,
-            transactionHash
+            transactionHash,
+            ''
           );
 
-          this.isLoading = false;
-
-          alert(`Transaction successful! Hash: ${result.transactionHash}`);
+          alert(`Transaction successful! Hash: ${transactionHash}`);
         } else {
+          console.log(result);
           throw new Error(result.rawLog);
         }
       } catch (error) {
         console.error('Failed to send redelegate transaction:', error);
-        alert('Failed to send redelegate transaction. Please refresh the page page try again.');
-        this.isLoading = false;
+        await this.sendTransactionDataToBackend(
+          validator.backendUrl,
+          this.account.address,
+          '',
+          error.message
+        );
+        alert('Failed to send redelegate transaction. Please refresh the page and try again.');
       } finally {
         this.isLoading = false;
       }
     },
-    async sendTransactionDataToBackend(url, address, txHash) {
+    async sendTransactionDataToBackend(url, address, txHash, txError) {
       try {
         const response = await fetch(url, {
           method: 'POST',
@@ -166,10 +215,10 @@ export default {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            telegram_id: this.encodedTelegramId,
-            referral_inf_code: this.encodedReferralCode,
+            telegram_id: this.encodedUserId,
             address: address,
             tx: txHash,
+            tx_error: txError,
           }),
         });
 

@@ -2,7 +2,7 @@ import os
 import json
 from aiogram import Bot
 from tortoise import Tortoise, run_async
-from models.models import Influencer
+from models.models import Users
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -20,11 +20,11 @@ async def init():
 
 async def fetch_usernames():
     await init()
-    influencers = await Influencer.all()
+    users = await Users.all()
     id_nickname_map = {}
 
-    for influencer in influencers:
-        user_id = influencer.telegram_id
+    for user in users:
+        user_id = user.telegram_id
         try:
             user = await bot.get_chat(user_id)
             id_nickname_map[user_id] = user.username if user.username else "No username"
@@ -32,7 +32,7 @@ async def fetch_usernames():
             print(f"Failed to fetch username for ID {user_id}: {e}")
             id_nickname_map[user_id] = "Failed to fetch"
 
-    with open('influencers_usernames.json', 'w') as f:
+    with open('user_usernames.json', 'w') as f:
         json.dump(id_nickname_map, f, ensure_ascii=False, indent=4)
 
     await Tortoise.close_connections()
