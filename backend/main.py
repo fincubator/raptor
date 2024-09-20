@@ -30,7 +30,7 @@ app = FastAPI(lifespan=lifespan)
 
 register_tortoise(
     app,
-    db_url=os.getenv('DB_URL'),
+    db_url=os.getenv('DATABASE_URL'),
     modules={'models': ['models.models']},
     generate_schemas=True,
     add_exception_handlers=True,
