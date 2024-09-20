@@ -33,7 +33,7 @@ async def generate_unique_link(user_id: str, ref_id: str):
         ref_id (str): ref_id for current user
     """
     unique_id = str(uuid.uuid4())
-    link = f"{website_link}?ref_id={encode_id(ref_id)}&user_id={encode_id(user_id)}&link_id={unique_id}"
+    link = f"{website_link}?link_id={unique_id}&r_id={encode_id(ref_id)}&u_id={encode_id(user_id)}"
     return link, unique_id
 
 
@@ -79,13 +79,12 @@ async def cmd_start(message: Message):
     user = await Users.get_or_none(telegram_id=user_id)
 
     if user:
-        await message.answer("You are already registered.")
         ref_link = f"{tg_bot_link}?start={user_id}"
         await message.answer(f"Your referral link to the bot: {ref_link}")
         link, unique_id = await generate_unique_link(user_id, user.ref_id)
         user.used_unique_links[unique_id] = False
         await user.save()
-        await message.answer(f"Your one-time website link: {link}")
+        await message.answer(f"Your new one-time website link: {link}")
         return
 
     if ref_arg:

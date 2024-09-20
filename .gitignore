@@ -100,6 +100,7 @@ fastapi_admin/
 pgdata/
 
 postgres_commands
+par_me.py
 
 .DS_Store
 node_modules

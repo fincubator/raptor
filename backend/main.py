@@ -81,7 +81,7 @@ async def handle_broadcast_request_tia(data: TxData):
         telegram_id, address, tx, tx_error = get_data(data)
         result = await save_user_delegation_tia(
             telegram_id, address, tx, tx_error)
-        logger.info(result)
+        logger.info(f"result {result}")
         return result
     except HTTPException as e:
         logger.error(f"Error processing TIA request: {e.detail}")
@@ -99,7 +99,7 @@ async def handle_broadcast_request_fet(data: TxData):
         telegram_id, address, tx, tx_error = get_data(data)
         result = await save_user_delegation_fet(
             telegram_id, address, tx, tx_error)
-        logger.info(result)
+        logger.info(f"result {result}")
         return result
     except HTTPException as e:
         logger.error(f"Error processing FET request: {e.detail}")

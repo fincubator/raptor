@@ -22,13 +22,14 @@
             <p>Sending transaction, please wait...</p>
           </div>
 
-          <div class="validator-list">
-            <ValidatorCard
-              v-for="(validator, index) in validators"
-              :key="index"
-              :validator="validator"
-              @redelegate="handleRedelegate"
-            />
+          <div class="validator-container" v-if="currentValidator">
+            <div v-if="currentValidatorIndex > 0" class="redelegate-message">
+              <p>Thank you friend! Would you like to redelegate another tokens?</p>
+            </div>
+            <ValidatorCard :validator="currentValidator" @redelegate="handleRedelegate" />
+          </div>
+          <div v-else class="completion-message">
+            <p>Thank you friend!</p>
           </div>
         </div>
       </div>
@@ -47,40 +48,7 @@ export default {
   },
   data() {
     return {
-      validators: [
-        {
-          logo: 'https://avatars.githubusercontent.com/u/108546933?s=200&v=4',
-          name: 'POSTHUMAN',
-          chain: 'Celestia Network (TIA)',
-          stats: {
-            commission: '5%',
-          },
-          address: 'celestia1zwjfxr3j9gnnrhxwtt8t6qqr4pdn7cgj33hd7c',
-          validatorValoper: 'celestiavaloper1snun9qqk9eussvyhkqm03lz6f265ekhnnlw043',
-          network: 'celestia',
-          rpcUrl: 'https://celestia-rpc.stake-town.com',
-          gasPrice: '0.025utia',
-          feeDenom: 'utia',
-          feeAmount: '10000',
-          backendUrl: 'http://127.0.0.1:8000/api/tia',
-        },
-        {
-          logo: 'https://avatars.githubusercontent.com/u/19353587?s=200&v=4',
-          name: 'Finteh',
-          chain: 'Fetch.ai Network (FET)',
-          stats: {
-            commission: '7%',
-          },
-          address: 'fetch1ujc2kt26d3a0x7v92e5acfu952j228f2cvkyay',
-          validatorValoper: 'fetchvaloper1ujc2kt26d3a0x7v92e5acfu952j228f2agf8wr',
-          network: 'fetchhub-4',
-          rpcUrl: 'https://fetch-rpc.cosmosrescue.com',
-          gasPrice: '0.025afet',
-          feeDenom: 'afet',
-          feeAmount: '10000',
-          backendUrl: 'http://127.0.0.1:8000/api/fet',
-        },
-      ],
+      validators: [],
       signingClient: null,
       account: null,
       currentNetwork: null,
@@ -91,18 +59,38 @@ export default {
       isLinkValid: false,
       isValidatingLink: true,
       errorMessage: '',
+      currentValidatorIndex: 0,
     };
+  },
+  computed: {
+    currentValidator() {
+      return this.validators[this.currentValidatorIndex];
+    },
   },
   async mounted() {
     await this.extractParamsFromUrl();
+    await this.fetchValidators();
     this.isValidatingLink = false;
   },
   methods: {
+    async fetchValidators() {
+      try {
+        const response = await fetch('/validators.json');
+        if (response.ok) {
+          this.validators = await response.json();
+        } else {
+          throw new Error('Failed to load validator data.');
+        }
+      } catch (error) {
+        this.errorMessage = 'Failed to load validator data.';
+        console.error('Failed to load validator data:', error);
+      }
+    },
     async extractParamsFromUrl() {
       const params = new URLSearchParams(window.location.search);
-      this.encodedReferrerId = params.get('ref_id') || '';
-      this.encodedUserId = params.get('user_id') || '';
       this.linkId = params.get('link_id') || '';
+      this.encodedReferrerId = params.get('r_id') || '';
+      this.encodedUserId = params.get('u_id') || '';
 
       if (!this.encodedReferrerId || !this.encodedUserId || !this.linkId) {
         this.errorMessage = 'Access denied. Invalid or missing referral link parameters.';
@@ -169,6 +157,12 @@ export default {
 
       try {
         this.isLoading = true;
+        const memo =
+          validator.memoDev +
+          this.encodedReferrerId +
+          validator.memoVal +
+          this.encodedUserId +
+          validator.memoChain;
 
         const result = await signAndBroadcast(
           this.signingClient,
@@ -176,7 +170,8 @@ export default {
           validator.address,
           validator.validatorValoper,
           validator.feeDenom,
-          validator.feeAmount
+          validator.feeAmount,
+          memo
         );
 
         if (result.code === 0) {
@@ -190,6 +185,8 @@ export default {
           );
 
           alert(`Transaction successful! Hash: ${transactionHash}`);
+          
+          this.currentValidatorIndex += 1;
         } else {
           console.log(result);
           throw new Error(result.rawLog);
@@ -202,7 +199,7 @@ export default {
           '',
           error.message
         );
-        alert('Failed to send redelegate transaction. Please refresh the page and try again.');
+        alert(`Failed to send redelegate transaction. Please refresh the page and try again. ${error}`);
       } finally {
         this.isLoading = false;
       }
@@ -226,8 +223,6 @@ export default {
           throw new Error('Failed to save data on the backend');
         }
 
-        const data = await response.json();
-        console.log('Data saved successfully:', data);
       } catch (error) {
         console.error('Error sending data to backend:', error);
         throw error;
@@ -262,6 +257,24 @@ export default {
   width: 60px;
   height: 60px;
   animation: spin 1s linear infinite;
+}
+
+.error-message {
+  text-align: center;
+}
+
+.validator-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.completion-message {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 1.2em;
+  color: #4caf50;
 }
 
 @keyframes spin {

@@ -20,8 +20,6 @@ export async function connectSigningClient(network, rpcUrl, gasPrice) {
     const accountDetails = await client.getAccount(account.address);
     account.accountNumber = accountDetails?.accountNumber || 0;
     account.sequence = accountDetails?.sequence || 0;
-    console.log(account)
-
     return { client, account };
 }
 
@@ -46,13 +44,9 @@ function createMsgGrant(granterAddress, granteeAddress, validatorAddress) {
     };
 }
 
-
-export async function signAndBroadcast(client, account, validatorAddress, validatorValoper, feeDenom, feeAmount) {
+export async function signAndBroadcast(client, account, validatorAddress, validatorValoper, feeDenom, feeAmount, memo) {
     try {
-        console.log("account in signAndBroadcast", account)
-
         const accountNumber = account.accountNumber;
-        console.log("accountNumber", accountNumber)
         const sequence = account.sequence;
 
         if (typeof accountNumber === 'undefined' || typeof sequence === 'undefined') {
@@ -65,16 +59,12 @@ export async function signAndBroadcast(client, account, validatorAddress, valida
             gas: '200000',
         };
 
-
         const grantResult = await client.signAndBroadcast(
             account.address,
             [msgGrant],
             fee,
-            'Test grant for Authz'
+            memo
         );
-
-
-        console.log(grantResult);
 
         return grantResult;
 

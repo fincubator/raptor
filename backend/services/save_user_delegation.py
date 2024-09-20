@@ -37,7 +37,7 @@ async def save_user_delegation_fet(telegram_id: str, address: str, tx: str, tx_e
             user.fet_tx = tx
         else:
             user.fet_address = address
-            user.fet_tx_error = tx
+            user.fet_tx_error = tx_error
         await user.save()
         user = await Users.get_or_none(telegram_id=telegram_id)
         return [user.telegram_id, user.fet_address, user.fet_tx, user.fet_tx_error]
