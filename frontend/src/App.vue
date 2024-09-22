@@ -17,9 +17,10 @@
         </div>
 
         <div v-else>
-          <div v-if="isLoading" class="loading-overlay">
+          <div v-if="isLoading || isConnectingWallet" class="loading-overlay">
             <div class="spinner"></div>
-            <p>Sending transaction, please wait...</p>
+            <p v-if="isLoading">Sending transaction, please wait...</p>
+            <p v-else-if="isConnectingWallet">Connecting wallet, please wait...</p>
           </div>
 
           <div class="validator-container" v-if="currentValidator">
@@ -53,6 +54,7 @@ export default {
       account: null,
       currentNetwork: null,
       isLoading: false,
+      isConnectingWallet: false,
       encodedUserId: '',
       encodedReferrerId: '',
       linkId: '',
@@ -75,9 +77,9 @@ export default {
   },
   methods: {
     handleKeplrAccountChange() {
-    this.signingClient = null;
-    this.account = null;
-  },
+      this.signingClient = null;
+      this.account = null;
+    },
     async fetchValidators() {
       try {
         const response = await fetch('/validators.json');
@@ -137,6 +139,7 @@ export default {
       }
     },
     async connectKeplr(network, rpcUrl, gasPrice) {
+      this.isConnectingWallet = true;
       try {
         const { client, account } = await connectSigningClient(network, rpcUrl, gasPrice);
         this.signingClient = client;
@@ -146,12 +149,20 @@ export default {
         return true;
       } catch (error) {
         console.error('Failed to connect Keplr:', error);
-        alert('Failed to connect Keplr. Please refresh the page and try again.');
+        alert('Failed to connect Keplr.');
         return false;
+      } finally {
+        this.isConnectingWallet = false;
       }
     },
     async handleRedelegate(validator) {
-      const isConnected = await this.connectKeplr(validator.network, validator.rpcUrl, validator.gasPrice);
+
+      const rpcUrl = {
+        'celestia': process.env.VUE_APP_CELESTIA_RPC_URL,
+        'fetchhub-4': process.env.VUE_APP_FETCH_RPC_URL
+      }
+      console.log(rpcUrl)
+      const isConnected = await this.connectKeplr(validator.network, rpcUrl[validator.network], validator.gasPrice);
       if (!isConnected) {
         return;
       }
@@ -186,7 +197,7 @@ export default {
           );
 
           alert(`Transaction successful! Hash: ${transactionHash}`);
-          
+
           this.currentValidatorIndex += 1;
         } else {
           console.log(result);
@@ -200,7 +211,7 @@ export default {
           '',
           error.message
         );
-        alert(`Failed to send redelegate transaction. Please refresh the page and try again. ${error}`);
+        alert(`Failed to send redelegate transaction. ${error}`);
       } finally {
         this.isLoading = false;
       }

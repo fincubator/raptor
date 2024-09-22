@@ -3,6 +3,13 @@ WORKDIR /frontend
 COPY package*.json ./
 RUN npm install
 COPY . .
+
+ARG VUE_APP_CELESTIA_RPC_URL
+ARG VUE_APP_FETCH_RPC_URL
+
+ARG VUE_APP_CELESTIA_RPC_URL
+ARG VUE_APP_FETCH_RPC_URL
+
 RUN npm run build
 
 FROM nginx:stable-alpine
