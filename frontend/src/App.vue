@@ -68,11 +68,16 @@ export default {
     },
   },
   async mounted() {
+    window.addEventListener('keplr_keystorechange', this.handleKeplrAccountChange);
     await this.extractParamsFromUrl();
     await this.fetchValidators();
     this.isValidatingLink = false;
   },
   methods: {
+    handleKeplrAccountChange() {
+    this.signingClient = null;
+    this.account = null;
+  },
     async fetchValidators() {
       try {
         const response = await fetch('/validators.json');
@@ -132,10 +137,6 @@ export default {
       }
     },
     async connectKeplr(network, rpcUrl, gasPrice) {
-      if (this.currentNetwork === network && this.signingClient && this.account) {
-        alert(`Already connected to ${network} network with address: ${this.account.address}`);
-        return true;
-      }
       try {
         const { client, account } = await connectSigningClient(network, rpcUrl, gasPrice);
         this.signingClient = client;

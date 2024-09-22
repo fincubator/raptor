@@ -5,7 +5,7 @@ export async function connectSigningClient(network, rpcUrl, gasPrice) {
     if (!window.keplr) throw new Error('Keplr extension is not installed.');
     await window.keplr.enable(network);
 
-    const offlineSigner = window.keplr.getOfflineSigner(network);
+    const offlineSigner = await window.keplr.getOfflineSignerAuto(network);
     const accounts = await offlineSigner.getAccounts();
     const account = accounts[0];
 
