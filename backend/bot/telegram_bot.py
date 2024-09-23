@@ -70,6 +70,21 @@ async def register_user(message: Message, user_id: str, ref_arg: str, ref_level:
     await message.answer(f"Your one-time website link: {link}")
 
 
+async def send_new_link_to_user(user_id: str):
+    try:
+        user = await Users.get_or_none(telegram_id=user_id)
+        if user:
+            link, unique_id = await generate_unique_link(str(user_id), user.ref_id)
+            user.used_unique_links[unique_id] = False
+            await user.save()
+            await bot.send_message(chat_id=user_id, text=f"Your new one-time website link: {link}")
+            logger.info(f"Sent new link to user {user_id}")
+        else:
+            logger.error(f"User with telegram_id {user_id} not found.")
+    except Exception as e:
+        logger.error(f"Error sending new link to user {user_id}: {e}")
+
+
 @router.message(CommandStart())
 async def cmd_start(message: Message):
     user_id = str(message.from_user.id)
@@ -79,8 +94,6 @@ async def cmd_start(message: Message):
     user = await Users.get_or_none(telegram_id=user_id)
 
     if user:
-        ref_link = f"{tg_bot_link}?start={user_id}"
-        await message.answer(f"Your referral link to the bot: {ref_link}")
         link, unique_id = await generate_unique_link(user_id, user.ref_id)
         user.used_unique_links[unique_id] = False
         await user.save()

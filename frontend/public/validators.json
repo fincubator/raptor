@@ -13,8 +13,8 @@
       "rpcUrl": "https://celestia-rpc.stake-town.com",
       "gasPrice": "0.025utia",
       "feeDenom": "utia",
-      "feeAmount": "10000",
-      "backendUrl": "http://127.0.0.1:8000/api/tia",
+      "feeAmount": "10000",               
+      "postUrl": "/api/tia",
       "memoDev": "rap",
       "memoVal": "pos",
       "memoChain": "cel" 
@@ -34,7 +34,7 @@
       "gasPrice": "0.025afet",
       "feeDenom": "afet",
       "feeAmount": "10000",
-      "backendUrl": "http://127.0.0.1:8000/api/fet",
+      "postUrl": "/api/fet",
       "memoDev": "rap",
       "memoVal": "fin",
       "memoChain": "fet" 

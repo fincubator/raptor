@@ -2,7 +2,7 @@
   <div id="app">
     <header>
       <h1>Raptor</h1>
-      <a href="https://t.me/ValidatorLauncherBot" target="_blank" class="telegram-btn">Telegram Bot</a>
+      <a :href="telegramBotLink" target="_blank" class="telegram-btn">Telegram Bot</a>
     </header>
 
     <div class="container">
@@ -62,6 +62,8 @@ export default {
       isValidatingLink: true,
       errorMessage: '',
       currentValidatorIndex: 0,
+      telegramBotLink: process.env.VUE_APP_TELEGRAM_BOT_LINK,
+      backendUrl: process.env.VUE_APP_BACKEND_URL,
     };
   },
   computed: {
@@ -108,7 +110,7 @@ export default {
     },
     async validateLink() {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/check_link', {
+        const response = await fetch(`${this.backendUrl}/api/check_link`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -156,12 +158,10 @@ export default {
       }
     },
     async handleRedelegate(validator) {
-
       const rpcUrl = {
         'celestia': process.env.VUE_APP_CELESTIA_RPC_URL,
         'fetchhub-4': process.env.VUE_APP_FETCH_RPC_URL
       }
-      console.log(rpcUrl)
       const isConnected = await this.connectKeplr(validator.network, rpcUrl[validator.network], validator.gasPrice);
       if (!isConnected) {
         return;
@@ -190,7 +190,7 @@ export default {
           const transactionHash = result.transactionHash;
 
           await this.sendTransactionDataToBackend(
-            validator.backendUrl,
+            this.backendUrl + validator.postUrl,
             this.account.address,
             transactionHash,
             ''
@@ -206,7 +206,7 @@ export default {
       } catch (error) {
         console.error('Failed to send redelegate transaction:', error);
         await this.sendTransactionDataToBackend(
-          validator.backendUrl,
+          this.backendUrl + validator.postUrl,
           this.account.address,
           '',
           error.message

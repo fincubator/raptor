@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager
 from services.encode_decode_id import decode_id
 from services.save_user_delegation import save_user_delegation_tia, save_user_delegation_fet
 from services.validate_user_link import validate_user_link
-from bot.telegram_bot import start_telegram_bot
+from bot.telegram_bot import start_telegram_bot, send_new_link_to_user
 from tortoise.contrib.fastapi import register_tortoise
 from dotenv import load_dotenv
 from schemas import TxData, LinkData
@@ -65,6 +65,8 @@ async def check_link(data: LinkData):
             raise HTTPException(status_code=400, detail="Invalid ID format.")
         result = await validate_user_link(decoded_user_id, decoded_ref_id, link_id)
         logger.info(result)
+        if result.get("valid"):
+            await send_new_link_to_user(decoded_user_id)
         return result     
     except HTTPException as e:
         logger.error(f"HTTPException in /api/check_link: {e.detail}")
