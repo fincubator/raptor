@@ -5,16 +5,10 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      args:
-        VUE_APP_CELESTIA_RPC_URL: ${VUE_APP_CELESTIA_RPC_URL}
-        VUE_APP_FETCH_RPC_URL: ${VUE_APP_FETCH_RPC_URL}
-        VUE_APP_TELEGRAM_BOT_LINK: ${VUE_APP_TELEGRAM_BOT_LINK}
-        VUE_APP_BACKEND_URL: ${VUE_APP_BACKEND_URL}
     ports:
       - "80:80"
+      - "443:443"
     container_name: frontend_container
-    env_file:
-      - .env 
     depends_on:
       - backend
     networks:

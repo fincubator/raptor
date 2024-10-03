@@ -63,7 +63,7 @@ export default {
       errorMessage: '',
       currentValidatorIndex: 0,
       telegramBotLink: process.env.VUE_APP_TELEGRAM_BOT_LINK,
-      backendUrl: process.env.VUE_APP_BACKEND_URL,
+      backendUrl: '',
     };
   },
   computed: {
@@ -116,8 +116,8 @@ export default {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            user_id: this.encodedUserId,
-            ref_id: this.encodedReferrerId,
+            u_id: this.encodedUserId,
+            r_id: this.encodedReferrerId,
             link_id: this.linkId,
           }),
         });
@@ -151,7 +151,7 @@ export default {
         return true;
       } catch (error) {
         console.error('Failed to connect Keplr:', error);
-        alert('Failed to connect Keplr.');
+        alert(`Failed to connect Keplr. ${error}`);
         return false;
       } finally {
         this.isConnectingWallet = false;
@@ -224,7 +224,7 @@ export default {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            telegram_id: this.encodedUserId,
+            u_id: this.encodedUserId,
             address: address,
             tx: txHash,
             tx_error: txError,

@@ -1,43 +1,38 @@
 [
-    {
-      "logo": "https://avatars.githubusercontent.com/u/108546933?s=200&v=4",
-      "name": "POSTHUMAN",
-      "chain": "Celestia Network (TIA)",
-      "stats": {
-        "commission": "5%"
-      },
-      "percents": 15,
-      "address": "celestia1zwjfxr3j9gnnrhxwtt8t6qqr4pdn7cgj33hd7c",
-      "validatorValoper": "celestiavaloper1snun9qqk9eussvyhkqm03lz6f265ekhnnlw043",
-      "network": "celestia",
-      "rpcUrl": "https://celestia-rpc.stake-town.com",
-      "gasPrice": "0.025utia",
-      "feeDenom": "utia",
-      "feeAmount": "10000",               
-      "postUrl": "/api/tia",
-      "memoDev": "rap",
-      "memoVal": "pos",
-      "memoChain": "cel" 
-    },
-    {
-      "logo": "https://avatars.githubusercontent.com/u/19353587?s=200&v=4",
-      "name": "Finteh",
-      "chain": "Fetch.ai Network (FET)",
-      "stats": {
-        "commission": "7%"
-      },
-      "percents": 35,
-      "address": "fetch1ujc2kt26d3a0x7v92e5acfu952j228f2cvkyay",
-      "validatorValoper": "fetchvaloper1ujc2kt26d3a0x7v92e5acfu952j228f2agf8wr",
-      "network": "fetchhub-4",
-      "rpcUrl": "https://fetch-rpc.cosmosrescue.com",
-      "gasPrice": "0.025afet",
-      "feeDenom": "afet",
-      "feeAmount": "10000",
-      "postUrl": "/api/fet",
-      "memoDev": "rap",
-      "memoVal": "fin",
-      "memoChain": "fet" 
-    }
-  ]
-  
+  {
+    "logo": "https://avatars.githubusercontent.com/u/108546933?s=200&v=4",
+    "name": "POSTHUMAN",
+    "chain": "Celestia Network (TIA)",
+    "commission": "5%",
+    "percents": 15,
+    "address": "celestia1zwjfxr3j9gnnrhxwtt8t6qqr4pdn7cgj33hd7c",
+    "validatorValoper": "celestiavaloper1snun9qqk9eussvyhkqm03lz6f265ekhnnlw043",
+    "network": "celestia",
+    "rpcUrl": "https://celestia-rpc.stake-town.com",
+    "gasPrice": "0.025utia",
+    "feeDenom": "utia",
+    "feeAmount": "10000",
+    "postUrl": "/api/tia",
+    "memoDev": "rap",
+    "memoVal": "pos",
+    "memoChain": "cel"
+  },
+  {
+    "logo": "https://avatars.githubusercontent.com/u/19353587?s=200&v=4",
+    "name": "Finteh",
+    "chain": "Fetch.ai Network (FET)",
+    "commission": "7%",
+    "percents": 35,
+    "address": "fetch1ujc2kt26d3a0x7v92e5acfu952j228f2cvkyay",
+    "validatorValoper": "fetchvaloper1ujc2kt26d3a0x7v92e5acfu952j228f2agf8wr",
+    "network": "fetchhub-4",
+    "rpcUrl": "https://fetch-rpc.cosmosrescue.com",
+    "gasPrice": "0.025afet",
+    "feeDenom": "afet",
+    "feeAmount": "10000",
+    "postUrl": "/api/fet",
+    "memoDev": "rap",
+    "memoVal": "fin",
+    "memoChain": "fet"
+  }
+]

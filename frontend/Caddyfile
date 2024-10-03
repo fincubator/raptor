@@ -1,0 +1,10 @@
+:80
+
+root * /usr/share/caddy/html
+encode gzip
+
+file_server
+
+handle /api/* {
+    reverse_proxy backend:8000
+}

@@ -4,15 +4,12 @@ COPY package*.json ./
 RUN npm install
 COPY . .
 
-ARG VUE_APP_CELESTIA_RPC_URL
-ARG VUE_APP_FETCH_RPC_URL
-ARG VUE_APP_TELEGRAM_BOT_LINK
-ARG VUE_APP_BACKEND_URL
+ENV VUE_APP_BACKEND_URL=''
 
 RUN npm run build
 
-FROM nginx:stable-alpine
-COPY --from=build /frontend/dist /usr/share/nginx/html
-COPY ./nginx.conf /etc/nginx/conf.d/default.conf
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+FROM caddy:2-alpine
+COPY --from=build /frontend/dist /usr/share/caddy/html
+COPY Caddyfile /etc/caddy/Caddyfile
+EXPOSE 80 443
+CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]

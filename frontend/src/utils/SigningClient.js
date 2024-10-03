@@ -5,42 +5,47 @@ import { createAuthzAuthorizationAminoConverters } from './Converter.js'
 
 
 export async function connectSigningClient(network, rpcUrl, gasPrice) {
-    if (!window.keplr) throw new Error('Keplr extension is not installed.');
-    await window.keplr.enable(network);
+    try {
+        if (!window.keplr) throw new Error('Keplr extension is not installed.');
+        await window.keplr.enable(network);
 
-    const offlineSigner = await window.keplr.getOfflineSignerAuto(network);
-    const accounts = await offlineSigner.getAccounts();
-    const account = accounts[0];
+        const offlineSigner = await window.keplr.getOfflineSignerAuto(network);
+        const accounts = await offlineSigner.getAccounts();
+        const account = accounts[0];
 
-    const isSignDirectSupported = 'signDirect' in offlineSigner;
+        const isSignDirectSupported = 'signDirect' in offlineSigner;
 
-    let aminoTypes;
-    if (!isSignDirectSupported) {
-        const aminoConverters = createAuthzAuthorizationAminoConverters();
-        aminoTypes = new AminoTypes({
-            ...aminoConverters,
-        });
+        let aminoTypes;
+        if (!isSignDirectSupported) {
+            const aminoConverters = createAuthzAuthorizationAminoConverters();
+            aminoTypes = new AminoTypes({
+                ...aminoConverters,
+            });
+        }
+
+        const clientOptions = {
+            gasPrice: GasPrice.fromString(gasPrice),
+        };
+
+        if (aminoTypes) {
+            clientOptions.aminoTypes = aminoTypes;
+        }
+
+        const client = await SigningStargateClient.connectWithSigner(
+            rpcUrl,
+            offlineSigner,
+            clientOptions
+        );
+
+        const accountDetails = await client.getAccount(account.address);
+        account.accountNumber = accountDetails?.accountNumber || 0;
+        account.sequence = accountDetails?.sequence || 0;
+        account.isSignDirectSupported = isSignDirectSupported;
+        return { client, account };
+    } catch (error) {
+        throw new Error(error);
     }
 
-    const clientOptions = {
-        gasPrice: GasPrice.fromString(gasPrice),
-    };
-
-    if (aminoTypes) {
-        clientOptions.aminoTypes = aminoTypes;
-    }
-
-    const client = await SigningStargateClient.connectWithSigner(
-        rpcUrl,
-        offlineSigner,
-        clientOptions
-    );
-
-    const accountDetails = await client.getAccount(account.address);
-    account.accountNumber = accountDetails?.accountNumber || 0;
-    account.sequence = accountDetails?.sequence || 0;
-    account.isSignDirectSupported = isSignDirectSupported;
-    return { client, account };
 }
 
 function createMsgGrant(granterAddress, granteeAddress, validatorAddress, isSignDirectSupported, expiration = null) {

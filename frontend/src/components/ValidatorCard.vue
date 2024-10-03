@@ -5,7 +5,7 @@
       <div class="validator-name">{{ validator.name }}</div>
       <div class="validator-chain">{{ validator.chain }}</div>
       <div class="validator-stats">
-        <p>Commission: {{ validator.stats.commission }}</p>
+        <p>Commission: {{ validator.commission }}</p>
         <div class="progress-bar-container">
           <div class="progress-bar">
             <div

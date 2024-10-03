@@ -9,14 +9,10 @@ from services.save_user_delegation import save_user_delegation_tia, save_user_de
 from services.validate_user_link import validate_user_link
 from bot.telegram_bot import start_telegram_bot, send_new_link_to_user
 from tortoise.contrib.fastapi import register_tortoise
-from dotenv import load_dotenv
 from schemas import TxData, LinkData
-
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-load_dotenv()
 
 
 @asynccontextmanager
@@ -38,7 +34,7 @@ register_tortoise(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost", "http://127.0.0.1"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -49,8 +45,8 @@ app.add_middleware(
 async def check_link(data: LinkData):
     logger.info(f"Check link request: {data}")
     try:
-        user_id = data.user_id
-        ref_id = data.ref_id
+        user_id = data.u_id
+        ref_id = data.r_id
         link_id = data.link_id
         
         if not user_id or not ref_id or not link_id:
@@ -84,7 +80,7 @@ async def handle_broadcast_request_tia(data: TxData):
         result = await save_user_delegation_tia(
             telegram_id, address, tx, tx_error)
         logger.info(f"result {result}")
-        return result
+        return "ok"
     except HTTPException as e:
         logger.error(f"Error processing TIA request: {e.detail}")
         raise e
@@ -102,7 +98,7 @@ async def handle_broadcast_request_fet(data: TxData):
         result = await save_user_delegation_fet(
             telegram_id, address, tx, tx_error)
         logger.info(f"result {result}")
-        return result
+        return "ok"
     except HTTPException as e:
         logger.error(f"Error processing FET request: {e.detail}")
         raise e
@@ -114,7 +110,7 @@ async def handle_broadcast_request_fet(data: TxData):
 
 
 def get_data(data):
-    telegram_id = data.telegram_id
+    telegram_id = data.u_id
     address = data.address
     tx = data.tx
     tx_error = data.tx_error

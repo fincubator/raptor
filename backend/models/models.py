@@ -27,6 +27,7 @@ class Users(Model):
     fet_address = fields.CharField(max_length=255, null=True)
     fet_tx = fields.CharField(max_length=255, null=True)
     fet_tx_error = fields.CharField(max_length=255, null=True)
+    language = fields.CharField(max_length=5, default='en')
 
     class Meta:
         table = "users"

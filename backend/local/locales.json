@@ -1,0 +1,16 @@
+{
+    "en": {
+        "choose_language": "Please choose your language / Пожалуйста, выберите ваш язык",
+        "language_set": "Language set to English.",
+        "your_referral_link": "Your referral link to the bot: {ref_link}",
+        "your_one_time_link": "Your one-time website link: {link}",
+        "new_one_time_link": "Your new one-time website link: {link}"
+    },
+    "ru": {
+        "choose_language": "Пожалуйста, выберите ваш язык / Please choose your language",
+        "language_set": "Язык установлен на русский.",
+        "your_referral_link": "Ваша реферальная ссылка на бота: {ref_link}",
+        "your_one_time_link": "Ваша одноразовая ссылка на веб-сайт: {link}",
+        "new_one_time_link": "Ваша новая одноразовая ссылка на веб-сайт: {link}"
+    }
+}
