@@ -42,33 +42,6 @@ async def generate_unique_link(user_id: str, ref_id: str):
     return link, unique_id
 
 
-async def register_user(user_id: str, ref_arg: str, ref_level: int, ref_type: str, lang_code: str):
-    user_data = {
-        "telegram_id": user_id,
-        "ref_id": ref_arg,
-        "ref_type": ref_type,
-        "ref_level": ref_level,
-        "used_unique_links": {},
-        "language": lang_code
-    }
-
-    user = await Users.create(**user_data)
-
-    link, unique_id = await generate_unique_link(user_id, user.ref_id)
-    user.used_unique_links[unique_id] = False
-    await user.save()
-
-    ref_link = f"{tg_bot_link}?start={user_id}"
-    await bot.send_message(
-        chat_id=user_id,
-        text=get_message('your_referral_link', lang_code, ref_link=ref_link)
-    )
-    await bot.send_message(
-        chat_id=user_id,
-        text=get_message('your_one_time_link', lang_code, link=link)
-    )
-
-
 async def send_new_link_to_user(user_id: str):
     try:
         user = await Users.get_or_none(telegram_id=user_id)
@@ -107,8 +80,13 @@ async def cmd_start(message: Message):
 
             dev_codes_list = await Developers.all().values_list('referral_dev_code', flat=True)
 
-            if ref_arg in dev_codes_list or await Users.get_or_none(telegram_id=ref_arg):
-                pass
+            if ref_arg in dev_codes_list:
+                ref_level = 1
+                ref_type = "developer"
+            elif await Users.get_or_none(telegram_id=ref_arg):
+                referrer_user = await Users.get(telegram_id=ref_arg)
+                ref_level = referrer_user.ref_level + 1
+                ref_type = "user"
             else:
                 await message.answer("Access denied. Incorrect referral link.")
                 return
@@ -116,15 +94,26 @@ async def cmd_start(message: Message):
             await message.answer("Access denied. No referral link provided.")
             return
 
+        user_data = {
+            "telegram_id": user_id,
+            "ref_id": ref_arg,
+            "ref_type": ref_type,
+            "ref_level": ref_level,
+            "used_unique_links": {},
+            "language": None
+        }
+
+        user = await Users.create(**user_data)
+
         keyboard = InlineKeyboardMarkup(inline_keyboard=[
             [
                 InlineKeyboardButton(
                     text="English",
-                    callback_data=LanguageCallback(lang_code='en', ref_arg=ref_arg or '').pack()
+                    callback_data=LanguageCallback(lang_code='en', ref_arg='').pack()
                 ),
                 InlineKeyboardButton(
                     text="Русский",
-                    callback_data=LanguageCallback(lang_code='ru', ref_arg=ref_arg or '').pack()
+                    callback_data=LanguageCallback(lang_code='ru', ref_arg='').pack()
                 )
             ]
         ])
@@ -137,40 +126,34 @@ async def cmd_start(message: Message):
 @router.callback_query(LanguageCallback.filter())
 async def language_selected(callback_query: CallbackQuery, callback_data: LanguageCallback):
     lang_code = callback_data.lang_code
-    ref_arg = callback_data.ref_arg or None
     user_id = str(callback_query.from_user.id)
 
     user = await Users.get_or_none(telegram_id=user_id)
     if user:
-        await callback_query.answer("You have already selected your language.")
-        return
-
-    if ref_arg:
-        if ref_arg == user_id:
-            await callback_query.message.answer("You cannot use your own referral link.")
+        if user.language:
+            await callback_query.answer("You have already selected your language.")
             return
 
-        dev_codes_list = await Developers.all().values_list('referral_dev_code', flat=True)
+        user.language = lang_code
+        link, unique_id = await generate_unique_link(user_id, user.ref_id)
+        user.used_unique_links[unique_id] = False
+        await user.save()
 
-        if ref_arg in dev_codes_list:
-            ref_level = 1
-            ref_type = "developer"
-        else:
-            referrer_user = await Users.get_or_none(telegram_id=ref_arg)
-            if referrer_user:
-                ref_level = referrer_user.ref_level + 1
-                ref_type = "user"
-            else:
-                await callback_query.message.answer("Access denied. Incorrect referral link.")
-                return
+        ref_link = f"{tg_bot_link}?start={user_id}"
+        await bot.send_message(
+            chat_id=user_id,
+            text=get_message('your_referral_link', lang_code, ref_link=ref_link)
+        )
+        await bot.send_message(
+            chat_id=user_id,
+            text=get_message('your_one_time_link', lang_code, link=link)
+        )
+
+        await callback_query.answer(get_message('language_set', lang_code), show_alert=False)
+        await callback_query.message.delete()
     else:
-        await callback_query.message.answer("Access denied. No referral link provided.")
+        await callback_query.message.answer("User not found.")
         return
-
-    await register_user(user_id, ref_arg, ref_level, ref_type, lang_code)
-
-    await callback_query.answer(get_message('language_set', lang_code), show_alert=False)
-    await callback_query.message.delete()
 
 
 @router.message(Command("add_dev_code"))
@@ -230,4 +213,3 @@ async def start_telegram_bot():
         logger.info("Bot has stopped.")
     except Exception as e:
         logger.error(f"Error in starting the bot: {e}")
-

@@ -1,46 +1,54 @@
 <template>
-  <div id="app">
-    <header>
-      <h1>Raptor</h1>
-      <a :href="telegramBotLink" target="_blank" class="telegram-btn">Telegram Bot</a>
-    </header>
-
-    <div class="container">
-      <div v-if="isValidatingLink" class="loading-overlay">
-        <div class="spinner"></div>
-        <p>Validating link, please wait...</p>
-      </div>
-
-      <div v-else>
-        <div v-if="!isLinkValid" class="error-message">
-          <p>{{ errorMessage }}</p>
+  <div id="app" class="v01">
+    <div class="row">
+      <div class="column_one">
+        <div class="column">
+          <button class="flex-row-center-center class-__" @click="goToTelegramBot">
+            <img src="/images/img_clock.svg" alt="Clock" class="clock" />
+            <span> Back to Raptor bot</span>
+          </button>
+          <p class="validator ui text size-textlg">Validator Launcher</p>
         </div>
-
-        <div v-else>
-          <div v-if="isLoading || isConnectingWallet" class="loading-overlay">
+        <div class="container">
+          <div v-if="isValidatingLink" class="loading-overlay">
             <div class="spinner"></div>
-            <p v-if="isLoading">Sending transaction, please wait...</p>
-            <p v-else-if="isConnectingWallet">Connecting wallet, please wait...</p>
+            <p> Validating link, please wait...</p>
           </div>
-
-          <div class="validator-container" v-if="currentValidator">
-            <div v-if="currentValidatorIndex > 0" class="redelegate-message">
-              <p>Thank you friend! Would you like to redelegate another tokens?</p>
+          <div v-else>
+            <div v-if="!isLinkValid" class="error-message">
+              <p class="flex-row-center-center class-__">{{ errorMessage }}</p>
             </div>
-            <ValidatorCard :validator="currentValidator" @redelegate="handleRedelegate" />
-          </div>
-          <div v-else class="completion-message">
-            <p>Thank you friend!</p>
+            <div v-else>
+              <div v-if="isLoading || isConnectingWallet" class="loading-overlay">
+                <div class="spinner"></div>
+                <p v-if="isLoading"> Sending transaction, please wait...</p>
+                <p v-else-if="isConnectingWallet"> Connecting wallet, please wait...</p>
+              </div>
+              <div class="validator-container" v-if="currentValidator">
+                <div v-if="currentValidatorIndex > 0" class="redelegate-message">
+                  <p class="flex-row-center-center class-__">Would you like to redelegate another
+                    tokens to encourage Raptor developers?<br></p>
+                </div>
+                <ValidatorCard :validator="currentValidator" @redelegate="handleRedelegate" />
+              </div>
+              <div v-else class="completion-message">
+                <p class="flex-row-center-center class-__">Thank you friend!</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+      <img src="/images/img_leonardo_phoeni.png" alt="Leonardophoeni" class="leonardophoeni" />
     </div>
   </div>
 </template>
 
 <script>
 import ValidatorCard from './components/ValidatorCard.vue';
-import { connectSigningClient, signAndBroadcast } from './utils/SigningClient.js';
+import {
+  connectSigningClient,
+  signAndBroadcast,
+} from './utils/SigningClient.js';
 
 export default {
   name: 'App',
@@ -78,6 +86,9 @@ export default {
     this.isValidatingLink = false;
   },
   methods: {
+    goToTelegramBot() {
+      window.open(this.telegramBotLink, '_blank');
+    },
     handleKeplrAccountChange() {
       this.signingClient = null;
       this.account = null;
@@ -143,11 +154,17 @@ export default {
     async connectKeplr(network, rpcUrl, gasPrice) {
       this.isConnectingWallet = true;
       try {
-        const { client, account } = await connectSigningClient(network, rpcUrl, gasPrice);
+        const { client, account } = await connectSigningClient(
+          network,
+          rpcUrl,
+          gasPrice
+        );
         this.signingClient = client;
         this.account = account;
         this.currentNetwork = network;
-        alert(`Connected with address: ${this.account.address} on ${network} network`);
+        alert(
+          `Connected with address: ${this.account.address} on ${network} network`
+        );
         return true;
       } catch (error) {
         console.error('Failed to connect Keplr:', error);
@@ -159,10 +176,14 @@ export default {
     },
     async handleRedelegate(validator) {
       const rpcUrl = {
-        'celestia': process.env.VUE_APP_CELESTIA_RPC_URL,
-        'fetchhub-4': process.env.VUE_APP_FETCH_RPC_URL
-      }
-      const isConnected = await this.connectKeplr(validator.network, rpcUrl[validator.network], validator.gasPrice);
+        celestia: process.env.VUE_APP_CELESTIA_RPC_URL,
+        'fetchhub-4': process.env.VUE_APP_FETCH_RPC_URL,
+      };
+      const isConnected = await this.connectKeplr(
+        validator.network,
+        rpcUrl[validator.network],
+        validator.gasPrice
+      );
       if (!isConnected) {
         return;
       }
@@ -234,7 +255,6 @@ export default {
         if (!response.ok) {
           throw new Error('Failed to save data on the backend');
         }
-
       } catch (error) {
         console.error('Error sending data to backend:', error);
         throw error;
@@ -245,7 +265,10 @@ export default {
 </script>
 
 <style scoped>
-@import './assets/style.css';
+@import './assets/styles.css';
+@import './assets/components.css';
+@import './assets/V01.css';
+@import './assets/index.css';
 
 .loading-overlay {
   position: fixed;
@@ -253,9 +276,8 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(15, 19, 43, 0.8);
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   z-index: 1000;
@@ -269,24 +291,6 @@ export default {
   width: 60px;
   height: 60px;
   animation: spin 1s linear infinite;
-}
-
-.error-message {
-  text-align: center;
-}
-
-.validator-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 20px;
-}
-
-.completion-message {
-  text-align: center;
-  margin-top: 20px;
-  font-size: 1.2em;
-  color: #4caf50;
 }
 
 @keyframes spin {

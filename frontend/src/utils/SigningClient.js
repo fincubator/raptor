@@ -45,7 +45,6 @@ export async function connectSigningClient(network, rpcUrl, gasPrice) {
     } catch (error) {
         throw new Error(error);
     }
-
 }
 
 function createMsgGrant(granterAddress, granteeAddress, validatorAddress, isSignDirectSupported, expiration = null) {

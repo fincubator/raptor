@@ -1,0 +1,258 @@
+.rowcommission {
+  gap: var(--space-sm);
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.votingpower {
+  color: var(--gray_300_99) !important;
+  letter-spacing: -0.96px;
+}
+
+.votingpower a {
+  color: var(--gray_300_99) !important;
+  letter-spacing: -0.96px;
+}
+
+.votingpowertwo {
+  color: var(--gray_300) !important;
+  letter-spacing: -0.96px;
+}
+
+.referralcode {
+  letter-spacing: 0.5px;
+}
+
+.input-1 {
+  letter-spacing: 0.5px;
+  background-color: var(--blue_gray_900);
+  padding: 14px 34px 14px 24px;
+  border-radius: var(--radius-xs);
+  @media only screen and (max-width: 550px) {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
+
+/*-------------------------------------
+  2. Page CSS
+--------------------------------------*/
+.v01 {
+  background-color: var(--gray_900);
+  width: 100%;
+}
+
+.row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  @media only screen and (max-width: 1050px) {
+    flex-direction: column;
+  }
+}
+
+.column_one {
+  gap: 60px;
+  z-index: 1;
+  display: flex;
+  width: 42%;
+  position: relative;
+  flex-direction: column;
+  @media only screen and (max-width: 1050px) {
+    width: 100%;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  @media only screen and (max-width: 550px) {
+    gap: 30px;
+  }
+}
+
+.column {
+  gap: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+}
+
+.class-__ {
+  color: var(--gray_300_01);
+  padding-left: 23px;
+  padding-right: 23px;
+  letter-spacing: -0.84px;
+  font-family: IBM Plex Mono;
+  font-size: 14px;
+  gap: 8px;
+  background-color: var(--white_a700_05);
+  text-align: center;
+  height: 48px;
+  min-width: 278px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--indigo_a400);
+  @media only screen and (max-width: 550px) {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
+
+.clock {
+  height: 24px;
+  width: 24px;
+}
+
+.clock:hover {
+  height: 26px;
+  width: 26px;
+}
+
+.validator {
+  color: var(--white_a700) !important;
+  letter-spacing: -2.76px;
+  font-family: IBM Plex Mono !important;
+}
+
+.column-1 {
+  gap: var(--space-md);
+  display: flex;
+  background-color: var(--indigo_900);
+  flex-direction: column;
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  @media only screen and (max-width: 550px) {
+    padding: 20px;
+  }
+}
+
+.row-1 {
+  gap: var(--space-xs);
+  background-color: var(--indigo_900);
+  display: flex;
+  border-radius: var(--radius-sm);
+  @media only screen and (max-width: 550px) {
+    flex-direction: column;
+  }
+}
+
+.rowposthuman {
+  gap: 16px;
+  display: flex;
+  flex: 1;
+  align-items: center;
+  @media only screen and (max-width: 550px) {
+    align-self: stretch;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
+
+.imageeight_one {
+  height: 80px;
+  width: 80px;
+  object-fit: cover;
+  border-radius: var(--radius-lg);
+}
+
+.columnposthuman {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+}
+
+.posthuman {
+  color: var(--white_a700) !important;
+  letter-spacing: -1.92px;
+  font-family: IBM Plex Mono !important;
+}
+
+.celestia {
+  color: var(--indigo_a100) !important;
+  letter-spacing: -0.96px;
+  font-family: IBM Plex Mono !important;
+  margin-bottom: 10px;
+}
+
+.columnvotingpow {
+  width: 44%;
+  @media only screen and (max-width: 550px) {
+    width: 100%;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
+
+.rowvotingpower {
+  gap: 10px;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.columnsend {
+  gap: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+}
+
+.columnreferralc {
+  gap: 24px;
+  display: flex;
+  align-self: stretch;
+  flex-direction: column;
+}
+
+.rowreferralcode {
+  gap: var(--space-xs);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.rowmaxtokens {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.send_redelegate {
+  color: var(--gray_100);
+  padding-left: var(--space-md);
+  padding-right: var(--space-md);
+  font-size: 24px;
+  background: linear-gradient(43deg, #e7579d, #b70092);
+  text-align: center;
+  height: 56px;
+  min-width: 310px;
+  border-radius: var(--radius-sm);
+  transition: background 0.3s ease;
+
+  @media only screen and (max-width: 1050px) {
+    font-size: 22px;
+  }
+
+  @media only screen and (max-width: 550px) {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
+
+.send_redelegate:hover {
+  background: linear-gradient(223deg, #e7579d, #b70092);
+}
+
+.leonardophoeni {
+  height: 896px;
+  margin-left: -32px;
+  position: relative;
+  width: 46%;
+  object-fit: contain;
+  @media only screen and (max-width: 1050px) {
+    width: 100%;
+    margin-left: 0px;
+  }
+}
