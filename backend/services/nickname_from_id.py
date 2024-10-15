@@ -37,5 +37,6 @@ async def fetch_usernames():
 
     await Tortoise.close_connections()
 
+
 if __name__ == "__main__":
     run_async(fetch_usernames())

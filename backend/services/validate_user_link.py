@@ -20,7 +20,8 @@ async def validate_user_link(user_id: str, ref_id: str, link_id: str):
         raise HTTPException(status_code=400, detail="Invalid link_id.")
 
     if user.used_unique_links[link_id]:
-        return {"valid": False, "message": "This link has already been used. We have sent a new website link to the bot, please use it."}
+        return {"valid": False,
+                "message": "This link has already been used. We have sent a new website link to the bot, please use it."}
     else:
         user.used_unique_links[link_id] = True
         await user.save()

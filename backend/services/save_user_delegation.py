@@ -14,7 +14,7 @@ async def save_user_delegation_tia(telegram_id: str, address: str, tx: str, tx_e
             user.tia_tx = tx
         else:
             user.tia_address = address
-            user.tia_tx_error = tx_error  
+            user.tia_tx_error = tx_error
         await user.save()
         user = await Users.get_or_none(telegram_id=telegram_id)
         return [user.telegram_id, user.tia_address, user.tia_tx, user.tia_tx_error]

@@ -12,6 +12,7 @@ def encode_id(id: str) -> str:
         logger.error(f"Failed to encode ID: {id}. Error: {type(e).__name__} - {e}")
         return None
 
+
 def decode_id(id: str) -> str:
     try:
         return str(base64.urlsafe_b64decode(id).decode())

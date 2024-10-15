@@ -168,7 +168,7 @@ export default {
         return true;
       } catch (error) {
         console.error('Failed to connect Keplr:', error);
-        alert(`Failed to connect Keplr. ${error}`);
+        alert(`Failed to connect Keplr. Please try againg. ${error}`);
         return false;
       } finally {
         this.isConnectingWallet = false;
@@ -232,7 +232,7 @@ export default {
           '',
           error.message
         );
-        alert(`Failed to send redelegate transaction. ${error}`);
+        alert(`Failed to send redelegate transaction. Please try again. ${error}`);
       } finally {
         this.isLoading = false;
       }

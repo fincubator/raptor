@@ -22,6 +22,7 @@ async def lifespan(app: FastAPI):
     yield
     logger.info("Shutting down Telegram bot...")
 
+
 app = FastAPI(lifespan=lifespan)
 
 register_tortoise(
@@ -48,7 +49,7 @@ async def check_link(data: LinkData):
         user_id = data.u_id
         ref_id = data.r_id
         link_id = data.link_id
-        
+
         if not user_id or not ref_id or not link_id:
             raise HTTPException(
                 status_code=400, detail="Invalid data: user_id, ref_id, and link_id are required."
@@ -63,7 +64,7 @@ async def check_link(data: LinkData):
         logger.info(result)
         if result.get("valid"):
             await send_new_link_to_user(decoded_user_id)
-        return result     
+        return result
     except HTTPException as e:
         logger.error(f"HTTPException in /api/check_link: {e.detail}")
         raise e

@@ -17,6 +17,8 @@ class Developers(Model):
 class Users(Model):
     id = fields.IntField(pk=True)
     telegram_id = fields.CharField(max_length=255, unique=True, index=True)
+    username = fields.CharField(max_length=255, null=True)
+    firstname = fields.CharField(max_length=255, null=True)
     ref_id = fields.CharField(max_length=255)
     ref_type = fields.CharField(max_length=10)
     ref_level = fields.IntField()
