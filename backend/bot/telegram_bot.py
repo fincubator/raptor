@@ -53,9 +53,13 @@ async def send_new_link_to_user(user_id: str):
             lang = user.language or 'en'
             link, unique_id = await generate_unique_link(str(user_id), user.ref_id)
             user.used_unique_links[unique_id] = False
-            await user.save()
-            await bot.send_message(chat_id=user_id, text=get_message('new_one_time_link', lang, link=link))
-            logger.info(f"Sent new link to user {user_id}")
+            try:
+                await user.save()
+                await bot.send_message(chat_id=user_id, text=get_message("new_one_time_link", lang, link=link))
+                logger.info(f"Sent new link to user {user_id}")
+            except Exception as e:
+                logger.error(
+                    f"Error with telegram_id {user_id} in send_new_link_to_user; user.save() with new link: {e}")
         else:
             logger.error(f"User with telegram_id {user_id} not found.")
     except Exception as e:
@@ -77,10 +81,14 @@ async def cmd_start(message: Message):
             lang = user.language or 'en'
             link, unique_id = await generate_unique_link(user_id, user.ref_id)
             user.used_unique_links[unique_id] = False
-            await user.save()
-            await message.answer(get_message('your_one_time_link', lang, link=link))
-            ref_link = f"{tg_bot_link}?start={user_id}"
-            await message.answer(get_message('your_referral_link', lang, ref_link=ref_link))
+            try:
+                await user.save()
+                await message.answer(get_message('your_one_time_link', lang, link=link))
+                ref_link = f"{tg_bot_link}?start={user_id}"
+                await message.answer(get_message('your_referral_link', lang, ref_link=ref_link))
+            except Exception as e:
+                logger.error(
+                    f"Error with telegram_id {user_id} in cmd_start; user.save() with new link after new start: {e}")
         else:
             keyboard = InlineKeyboardMarkup(inline_keyboard=[
                 [
@@ -101,8 +109,8 @@ async def cmd_start(message: Message):
     else:
         user_data = {
             "telegram_id": user_id,
-            "username": username,
-            "firstname": firstname,
+            "username": username if username else None,
+            "firstname": firstname if firstname else None,
             "ref_id": ref_arg if ref_arg else "None",
             "ref_type": "None",
             "ref_level": 0,
@@ -149,7 +157,7 @@ async def language_selected(callback_query: CallbackQuery, callback_data: Langua
         return
 
     if user.language:
-        await callback_query.answer(get_message('language_already_set', lang_code))
+        await callback_query.answer(get_message("language_already_set", lang_code))
         return
 
     if ref_arg:
@@ -157,34 +165,38 @@ async def language_selected(callback_query: CallbackQuery, callback_data: Langua
             await callback_query.message.answer(get_message("cannot_use_own_referral", lang_code))
             return
 
-        dev_codes_list = await Developers.all().values_list('referral_dev_code', flat=True)
+        try:
+            dev_codes_list = await Developers.all().values_list("referral_dev_code", flat=True)
 
-        if ref_arg in dev_codes_list:
-            ref_level = 1
-            ref_type = "developer"
-            await bot.send_message(
-                chat_id=user_id,
-                text=get_message('dev_referral', lang_code, ref_arg=ref_arg)
-            )
-        else:
-            referrer_user = await Users.get_or_none(telegram_id=ref_arg)
-            if referrer_user:
-                ref_level = referrer_user.ref_level + 1
-                ref_type = "user"
-                if referrer_user.username:
-                    await bot.send_message(
-                        chat_id=user_id,
-                        text=get_message('user_referral', lang_code, referrer_name=referrer_user.username, name=username if username else firstname)
-                    )
-                else:
-                    await bot.send_message(
-                        chat_id=user_id,
-                        text=get_message('user_referral', lang_code, referrer_name=referrer_user.firstname,
-                                         name=username if username else firstname)
-                    )
+            if ref_arg in dev_codes_list:
+                ref_level = 1
+                ref_type = "developer"
+                await bot.send_message(
+                    chat_id=user_id,
+                    text=get_message("dev_referral", lang_code, ref_arg=ref_arg)
+                )
             else:
-                await callback_query.message.answer(get_message("access_denied_incorrect_referral", lang_code))
-                return
+                referrer_user = await Users.get_or_none(telegram_id=ref_arg)
+                if referrer_user:
+                    ref_level = referrer_user.ref_level + 1
+                    ref_type = "user"
+                    if referrer_user.username:
+                        await bot.send_message(
+                            chat_id=user_id,
+                            text=get_message('user_referral', lang_code, referrer_name=referrer_user.username,
+                                             name=username if username else firstname)
+                        )
+                    else:
+                        await bot.send_message(
+                            chat_id=user_id,
+                            text=get_message('user_referral', lang_code, referrer_name=referrer_user.firstname,
+                                             name=username if username else firstname)
+                        )
+                else:
+                    await callback_query.message.answer(get_message("access_denied_incorrect_referral", lang_code))
+                    return
+        except Exception as e:
+            logger.error(f"Error in checking ref_arg in Developers or Users: {e}")
     else:
         await callback_query.message.answer(get_message("access_denied_no_referral", lang_code))
         return

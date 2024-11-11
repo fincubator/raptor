@@ -8,7 +8,7 @@ ENV VUE_APP_BACKEND_URL=''
 
 RUN npm run build
 
-FROM caddy:2-alpine
+FROM caddy:latest
 COPY --from=build /frontend/dist /usr/share/caddy/html
 COPY Caddyfile /etc/caddy/Caddyfile
 EXPOSE 80 443
