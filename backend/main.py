@@ -1,3 +1,4 @@
+import json
 import logging
 import asyncio
 import os
@@ -14,6 +15,8 @@ from schemas import TxData, LinkData
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+allowed_origins = os.getenv("ALLOWED_ORIGINS")
+allowed_origins_list = json.loads(allowed_origins) if allowed_origins else []
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -35,7 +38,7 @@ register_tortoise(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost", "http://127.0.0.1"],
+    allow_origins=allowed_origins_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

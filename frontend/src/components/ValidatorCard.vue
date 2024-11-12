@@ -10,7 +10,7 @@
       </div>
     </div>
     <form @submit.prevent="submitRedelegate" class="authz-form">
-      <button type="submit" class="send_redelegate">Send Redelegate Authz</button>
+      <button type="submit" class="send_redelegate">{{ $t('send_redelegate_msg') }}</button>
     </form>
   </div>
 </template>

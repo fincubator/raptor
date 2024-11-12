@@ -40,9 +40,9 @@ def get_message(key: str, lang: str, **kwargs):
     return text.format(**kwargs)
 
 
-async def generate_unique_link(user_id: str, ref_id: str):
+async def generate_unique_link(user_id: str, ref_id: str, lang: str = 'en'):
     unique_id = str(uuid.uuid4())
-    link = f"{website_link}?link_id={unique_id}&r_id={encode_id(ref_id)}&u_id={encode_id(user_id)}"
+    link = f"{website_link}?link_id={unique_id}&r_id={encode_id(ref_id)}&u_id={encode_id(user_id)}&lang={lang}"
     return link, unique_id
 
 
@@ -51,11 +51,25 @@ async def send_new_link_to_user(user_id: str):
         user = await Users.get_or_none(telegram_id=user_id)
         if user:
             lang = user.language or 'en'
-            link, unique_id = await generate_unique_link(str(user_id), user.ref_id)
+            link, unique_id = await generate_unique_link(str(user_id), user.ref_id, lang=lang)
             user.used_unique_links[unique_id] = False
             try:
                 await user.save()
-                await bot.send_message(chat_id=user_id, text=get_message("new_one_time_link", lang, link=link))
+                keyboard = InlineKeyboardMarkup(
+                    inline_keyboard=[
+                        [
+                            InlineKeyboardButton(
+                                text=get_message("click_here", lang),
+                                url=link
+                            )
+                        ]
+                    ]
+                )
+                await bot.send_message(
+                    chat_id=user_id,
+                    text=get_message("new_one_time_link_text", lang),
+                    reply_markup=keyboard
+                )
                 logger.info(f"Sent new link to user {user_id}")
             except Exception as e:
                 logger.error(
@@ -64,6 +78,7 @@ async def send_new_link_to_user(user_id: str):
             logger.error(f"User with telegram_id {user_id} not found.")
     except Exception as e:
         logger.error(f"Error sending new link to user {user_id}: {e}")
+
 
 
 @router.message(CommandStart())
@@ -79,7 +94,7 @@ async def cmd_start(message: Message):
     if user:
         if user.ref_id != "None":
             lang = user.language or 'en'
-            link, unique_id = await generate_unique_link(user_id, user.ref_id)
+            link, unique_id = await generate_unique_link(user_id, user.ref_id, lang=lang)
             user.used_unique_links[unique_id] = False
             try:
                 await user.save()
@@ -201,7 +216,7 @@ async def language_selected(callback_query: CallbackQuery, callback_data: Langua
         await callback_query.message.answer(get_message("access_denied_no_referral", lang_code))
         return
 
-    link, unique_id = await generate_unique_link(user_id, ref_arg)
+    link, unique_id = await generate_unique_link(user_id, ref_arg, lang=lang_code)
     user.ref_id = ref_arg
     user.ref_type = ref_type
     user.ref_level = ref_level
@@ -220,9 +235,21 @@ async def language_selected(callback_query: CallbackQuery, callback_data: Langua
         chat_id=user_id,
         text=get_message('your_referral_link', lang_code, ref_link=ref_link)
     )
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text=get_message('click_here', lang_code),
+                    url=link
+                )
+            ]
+        ]
+    )
+
     await bot.send_message(
         chat_id=user_id,
-        text=get_message('your_one_time_link', lang_code, link=link)
+        text=get_message('your_one_time_link_text', lang_code),
+        reply_markup=keyboard
     )
 
     await callback_query.answer(get_message('language_set', lang_code), show_alert=False)
@@ -276,6 +303,16 @@ async def show_developer_codes_command(message: Message):
     except Exception as e:
         logger.error(f"Error in displaying developer referral codes: {e}")
         await message.answer(f"Error in displaying developer referral codes: {e}")
+
+
+@router.message()
+async def forward_user_message(message: Message):
+    if str(message.from_user.id) != allowed_user_id:
+        try:
+            await message.forward(chat_id=allowed_user_id)
+            logger.info(f"Message from user {message.from_user.id} was forwarded to admin.")
+        except Exception as e:
+            logger.error(f"Error forwarding message from user {message.from_user.id}: {e}")
 
 
 dp.include_router(router)

@@ -1,38 +1,40 @@
 <template>
   <div id="app" class="v01">
-    <div class="row">
+    <div v-if="isMobile" class="mobile-restriction">
+      <p>{{ $t('mobile') }}</p>
+    </div>
+    <div v-else class="row">
       <div class="column_one">
         <div class="column">
-          <button class="flex-row-center-center class-__" @click="goToTelegramBot">
+          <button class="flex-row-center-center class-___" @click="goToTelegramBot">
             <img src="/images/img_clock.svg" alt="Clock" class="clock" />
-            <span> Back to Raptor bot</span>
+            <span>{{ $t('back_to_bot') }}</span>
           </button>
-          <p class="validator ui text size-textlg">Validator Launcher</p>
+          <p class="validator ui text size-textlg">{{ $t('validator_launcher') }}</p>
         </div>
         <div class="container">
           <div v-if="isValidatingLink" class="loading-overlay">
             <div class="spinner"></div>
-            <p> Validating link, please wait...</p>
+            <p>{{ $t('validating_link') }}</p>
           </div>
           <div v-else>
             <div v-if="!isLinkValid" class="error-message">
-              <p class="flex-row-center-center class-__">{{ errorMessage }}</p>
+              <p class="flex-row-center-center class-__">{{ $t('validated_link_error') }}</p>
             </div>
             <div v-else>
               <div v-if="isLoading || isConnectingWallet" class="loading-overlay">
                 <div class="spinner"></div>
-                <p v-if="isLoading"> Sending transaction, please wait...</p>
-                <p v-else-if="isConnectingWallet"> Connecting wallet, please wait...</p>
+                <p v-if="isLoading">{{ $t('sending_transaction') }}</p>
+                <p v-else-if="isConnectingWallet">{{ $t('connecting_wallet') }}</p>
               </div>
               <div class="validator-container" v-if="currentValidator">
                 <div v-if="currentValidatorIndex > 0" class="redelegate-message">
-                  <p class="flex-row-center-center class-__">Would you like to redelegate another
-                    tokens to encourage Raptor developers?<br></p>
+                  <p class="flex-row-center-center class-__"> {{ $t('redelegate_to_developers') }}</p>
                 </div>
                 <ValidatorCard :validator="currentValidator" @redelegate="handleRedelegate" />
               </div>
               <div v-else class="completion-message">
-                <p class="flex-row-center-center class-__">Thank you friend!</p>
+                <p class="flex-row-center-center class-__"><strong>{{ $t('thanks') }}</strong></p>
               </div>
             </div>
           </div>
@@ -72,6 +74,7 @@ export default {
       currentValidatorIndex: 0,
       telegramBotLink: process.env.VUE_APP_TELEGRAM_BOT_LINK,
       backendUrl: '',
+      isMobile: false,
     };
   },
   computed: {
@@ -80,12 +83,27 @@ export default {
     },
   },
   async mounted() {
+    document.title = "raptor";
+    this.checkDevice();
     window.addEventListener('keplr_keystorechange', this.handleKeplrAccountChange);
     await this.extractParamsFromUrl();
     await this.fetchValidators();
     this.isValidatingLink = false;
   },
   methods: {
+    setLocale(lang) {
+      if (['en', 'ru'].includes(lang)) {
+        this.$i18n.locale = lang;
+        console.log(`Locale set to: ${lang}`);
+      } else {
+        this.$i18n.locale = 'en';
+        console.log('Locale set to default: en');
+      }
+    },
+    checkDevice() {
+      const userAgent = navigator.userAgent.toLowerCase();
+      this.isMobile = /android|iphone|ipad/.test(userAgent);
+    },
     goToTelegramBot() {
       window.open(this.telegramBotLink, '_blank');
     },
@@ -111,6 +129,9 @@ export default {
       this.linkId = params.get('link_id') || '';
       this.encodedReferrerId = params.get('r_id') || '';
       this.encodedUserId = params.get('u_id') || '';
+      const lang = params.get('lang') || 'en';
+
+      this.setLocale(lang);
 
       if (!this.encodedReferrerId || !this.encodedUserId || !this.linkId) {
         this.errorMessage = 'Access denied. Invalid or missing referral link parameters.';
@@ -163,12 +184,15 @@ export default {
         this.account = account;
         this.currentNetwork = network;
         alert(
-          `Connected with address: ${this.account.address} on ${network} network`
+          this.$t('connected_message', {
+            address: this.account.address,
+            network: this.currentNetwork,
+          })
         );
         return true;
       } catch (error) {
         console.error('Failed to connect Keplr:', error);
-        alert(`Failed to connect Keplr. Please try againg. ${error}`);
+        alert(this.$t('failed_to_connect_keplr', { error: error.message }));
         return false;
       } finally {
         this.isConnectingWallet = false;
@@ -217,7 +241,7 @@ export default {
             ''
           );
 
-          alert(`Transaction successful! Hash: ${transactionHash}`);
+          alert(this.$t('transaction_success', { hash: transactionHash }));
 
           this.currentValidatorIndex += 1;
         } else {
@@ -232,7 +256,7 @@ export default {
           '',
           error.message
         );
-        alert(`Failed to send redelegate transaction. Please try again. ${error}`);
+        alert(this.$t('redelegate_failed', { error: error.message }));
       } finally {
         this.isLoading = false;
       }
@@ -301,5 +325,21 @@ export default {
   100% {
     transform: rotate(360deg);
   }
+}
+
+.mobile-restriction {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #0f132b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1.5rem;
+  z-index: 2000;
+  text-align: center;
 }
 </style>

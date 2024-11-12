@@ -96,12 +96,33 @@
   }
 }
 
+.class-___ {
+  color: var(--gray_300_01);
+  padding-left: 23px;
+  padding-right: 23px;
+  letter-spacing: -0.84px;
+  font-family: IBM Plex Mono;
+  font-size: 14px;
+  gap: 8px;
+  text-align: center;
+  height: 48px;
+  min-width: 278px;
+  @media only screen and (max-width: 550px) {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
+
+.class-___:hover span {
+  text-decoration: underline;
+}
+
 .clock {
   height: 24px;
   width: 24px;
 }
 
-.clock:hover {
+.class-___:hover .clock {
   height: 26px;
   width: 26px;
 }
