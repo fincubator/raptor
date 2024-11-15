@@ -15,14 +15,16 @@ const messages = {
     failed_to_connect_keplr: 'Failed to connect Keplr. Please try again. Error: {error}',
     transaction_success: 'Transaction successful! Hash: {hash}',
     redelegate_failed: 'Failed to send redelegate transaction. Please try again. Error: {error}',
-    send_redelegate_msg: 'Send Redelegate Authz'
+    send_redelegate_msg: 'Send Redelegate Authz',
+    no_tokens_message: "I don't have tokens {chain}"
+
   },
   ru: {
     mobile: 'Вы можете использовать этот сайт только на ПК и ноутбуке.',
     back_to_bot: ' Вернуться в Raptor бот',
     validator_launcher: 'Запуск Валидатора',
     validating_link: ' Валидирую ссылку, пожалуйста подождите...',
-    validated_link_error: 'Invalid link or this link has already been used. We have sent you a new link to the bot.',
+    validated_link_error: 'Неверная или уже использованная ссылка. Мы отправили новую ссылку в бота.',
     sending_transaction: ' Отправляем транзакцию, пожалуйста подождите...',
     connecting_wallet: ' Подключаем кошелек, пожалуйста подождите..',
     redelegate_to_developers: 'Хотели бы вы ределигировать другие токены для поддержки разработчиков Raptor?',
@@ -31,7 +33,8 @@ const messages = {
     failed_to_connect_keplr: 'Не удалось подключить Keplr. Пожалуйста, попробуйте снова. Ошибка: {error}',
     transaction_success: 'Транзакция прошла успешно! Хеш: {hash}',
     redelegate_failed: 'Не удалось отправить транзакцию перераспределения. Пожалуйста, попробуйте снова. Ошибка: {error}',
-    send_redelegate_msg: 'Отправить транзакцию'
+    send_redelegate_msg: 'Отправить транзакцию',
+    no_tokens_message: "У меня нет токенов {chain}"
   },
 };
 

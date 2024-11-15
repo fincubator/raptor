@@ -262,15 +262,20 @@
   }
 }
 
+/* .send_redelegate::before,
+.send_redelegate::after {
+  content: none;
+} */
+
 .send_redelegate:hover {
   background: linear-gradient(223deg, #e7579d, #b70092);
 }
 
 .leonardophoeni {
-  height: 896px;
+  height: 800px;
   margin-left: -32px;
   position: relative;
-  width: 46%;
+  width: 55%;
   object-fit: contain;
   @media only screen and (max-width: 1050px) {
     width: 100%;

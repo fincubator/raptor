@@ -31,7 +31,8 @@
                 <div v-if="currentValidatorIndex > 0" class="redelegate-message">
                   <p class="flex-row-center-center class-__"> {{ $t('redelegate_to_developers') }}</p>
                 </div>
-                <ValidatorCard :validator="currentValidator" @redelegate="handleRedelegate" />
+                <ValidatorCard :validator="currentValidator" @redelegate="handleRedelegate"
+                  @no-tokens="skipRedelegate" />
               </div>
               <div v-else class="completion-message">
                 <p class="flex-row-center-center class-__"><strong>{{ $t('thanks') }}</strong></p>
@@ -40,7 +41,7 @@
           </div>
         </div>
       </div>
-      <img src="/images/img_leonardo_phoeni.png" alt="Leonardophoeni" class="leonardophoeni" />
+      <img src="/images/img_leo.png" alt="Leonardophoeni" class="leonardophoeni" />
     </div>
   </div>
 </template>
@@ -91,6 +92,9 @@ export default {
     this.isValidatingLink = false;
   },
   methods: {
+    skipRedelegate() {
+      this.currentValidatorIndex += 1;
+    },
     setLocale(lang) {
       if (['en', 'ru'].includes(lang)) {
         this.$i18n.locale = lang;

@@ -11,6 +11,14 @@
     </div>
     <form @submit.prevent="submitRedelegate" class="authz-form">
       <button type="submit" class="send_redelegate">{{ $t('send_redelegate_msg') }}</button>
+      <button
+        v-if="validator.name === 'finteh'"
+        type="button"
+        class="no_tokens_button"
+        @click="handleNoTokens"
+      >
+        {{ $t('no_tokens_message', { chain: validator.chain }) }}
+      </button>
     </form>
   </div>
 </template>
@@ -34,6 +42,9 @@ export default {
     submitRedelegate() {
       this.$emit('redelegate', this.validator);
     },
+    handleNoTokens() {
+      this.$emit('no-tokens');
+    },
   },
 };
 </script>
@@ -44,5 +55,15 @@ export default {
 @import '../assets/V01.css';
 @import '../assets/index.css';
 
+.no_tokens_button {
+  color: #fff;
+  padding: 10px;
+  margin-top: 15px;
+  border: none;
+  cursor: pointer;
+}
+.no_tokens_button:hover {
+  text-decoration: underline;
+}
 
 </style>
